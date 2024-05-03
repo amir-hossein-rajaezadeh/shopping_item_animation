@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_placeholder_textlines/placeholder_lines.dart';
 
 void main() {
@@ -14,6 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -48,7 +48,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   late final Animation<double> _fadeAnimation =
       Tween<double>(begin: 0, end: 1).animate(_fadeController);
-
+  bool isDone = false;
   double shopWidth = 45;
   @override
   Widget build(BuildContext context) {
@@ -59,59 +59,56 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Home",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        shopWidth = 50;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      width: shopWidth,
-                      alignment: Alignment.topRight,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: shopWidth == 45
-                                ? Colors.transparent
-                                : Colors.grey),
-                      ),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            if (shopWidth != 45 &&
-                                !_slideController.isAnimating)
-                              const Expanded(
-                                child: Text(
-                                  "1",
-                                  style: TextStyle(fontSize: 20),
-                                ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Home",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      shopWidth = 50;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    width: shopWidth,
+                    alignment: Alignment.topRight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: shopWidth == 45
+                              ? Colors.transparent
+                              : Colors.grey),
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 0, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          if (shopWidth != 45 && !_slideController.isAnimating)
+                            const Expanded(
+                              child: Text(
+                                "1",
+                                style: TextStyle(fontSize: 20),
                               ),
-                            Container(
-                              margin: const EdgeInsets.only(right: 6),
-                              child: const Icon(Icons.shopping_bag_outlined),
-                            )
-                          ],
-                        ),
+                            ),
+                          Container(
+                            margin: const EdgeInsets.only(right: 6),
+                            child: const Icon(Icons.shopping_bag_outlined),
+                          )
+                        ],
                       ),
                     ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
             Container(
               margin: const EdgeInsets.only(top: 30),
@@ -147,12 +144,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade700),
                   ),
-                  Container(
-                    child: const Text(
-                      "View All",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                    ),
+                  const Text(
+                    "View All",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                   )
                 ],
               ),
@@ -206,7 +200,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
                                           color: !_slideController.isAnimating
-                                              ? Colors.transparent
+                                              ? Colors.white
                                               : Colors.grey),
                                       color: Colors.white,
                                     ),
@@ -232,34 +226,54 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               margin: const EdgeInsets.only(top: 0, left: 0),
                               child: IconButton(
                                 onPressed: () async {
-                                  setState(
-                                    () {
-                                      imageWidth = 110;
-                                    },
-                                  );
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 300),
-                                  );
-                                  _fadeController.forward();
+                                  if (isDone) {
+                                    _slideController.reverse();
 
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 800),
-                                  );
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 800),
+                                    );
+                                    setState(() {
+                                      imageWidth = 300;
+                                    });
 
-                                  _slideController.forward();
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 0),
-                                  );
-                                  setState(() {
-                                    imageWidth = 50;
-                                  });
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 220),
+                                    );
+                                    _fadeController.reverse();
 
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 150),
-                                  );
-                                  setState(() {
-                                    shopWidth = 90;
-                                  });
+                                    setState(() {
+                                      shopWidth = 45;
+                                      isDone = false;
+                                    });
+                                  } else {
+                                    setState(
+                                      () {
+                                        imageWidth = 110;
+                                      },
+                                    );
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 300),
+                                    );
+                                    _fadeController.forward();
+
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 800),
+                                    );
+
+                                    _slideController.forward();
+
+                                    setState(() {
+                                      imageWidth = 50;
+                                    });
+
+                                    await Future.delayed(
+                                      const Duration(milliseconds: 150),
+                                    );
+                                    setState(() {
+                                      shopWidth = 90;
+                                      isDone = true;
+                                    });
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.add_circle_outline_sharp,
