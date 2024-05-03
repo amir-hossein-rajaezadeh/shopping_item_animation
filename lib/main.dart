@@ -275,8 +275,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                     });
                                   }
                                 },
-                                icon: const Icon(
-                                  Icons.add_circle_outline_sharp,
+                                icon: Icon(
+                                  imageWidth != 300
+                                      ? Icons.remove_circle_outline
+                                      : Icons.add_circle_outline_sharp,
                                   color: Colors.black,
                                 ),
                               ),
