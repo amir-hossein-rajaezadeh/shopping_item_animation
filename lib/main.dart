@@ -35,9 +35,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     vsync: this,
     duration: const Duration(milliseconds: 600),
   );
-  late final AnimationController _fadeController = AnimationController(
+  late final AnimationController _imageFadeController = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 180),
+    duration: const Duration(milliseconds: 250),
+  );
+
+  late final AnimationController _itemCountFadeController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 800),
   );
 
   late final Animation<Offset> _slideAnimation = Tween<Offset>(
@@ -46,11 +51,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   ).animate(_slideController);
   double imageWidth = 300;
 
-  late final Animation<double> _fadeAnimation =
-      Tween<double>(begin: 0, end: 1).animate(_fadeController);
-  bool isDone = false;
-  double shopWidth = 45;
+  late final Animation<double> _imageFadeAnimation =
+      Tween<double>(begin: 0, end: 1).animate(_imageFadeController);
 
+  late final Animation<double> _itemCountFadeAnimation =
+      Tween<double>(begin: 0, end: 1).animate(_itemCountFadeController);
+
+ 
+
+  bool itemTranstionDone = false;
+  double shopWidth = 45;
+  int showItemCountNumber = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,7 +123,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         margin: const EdgeInsets.only(top: 0, left: 0),
                         child: IconButton(
                           onPressed: () async {
-                            if (isDone) {
+                            if (itemTranstionDone) {
                               _slideController.reverse();
                               await Future.delayed(
                                 const Duration(milliseconds: 800),
@@ -120,30 +131,35 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               setState(
                                 () {
                                   imageWidth = 300;
+                                  showItemCountNumber = 2;
                                 },
                               );
 
                               await Future.delayed(
                                 const Duration(milliseconds: 220),
                               );
-                              _fadeController.reverse();
+                              _imageFadeController.reverse();
 
                               setState(
                                 () {
                                   shopWidth = 45;
-                                  isDone = false;
+                                  showItemCountNumber = 2;
+
+                                  itemTranstionDone = false;
                                 },
                               );
                             } else {
                               setState(
                                 () {
+                                  showItemCountNumber = 2;
+
                                   imageWidth = 110;
                                 },
                               );
                               await Future.delayed(
                                 const Duration(milliseconds: 300),
                               );
-                              _fadeController.forward();
+                              _imageFadeController.forward();
 
                               await Future.delayed(
                                 const Duration(milliseconds: 800),
@@ -160,7 +176,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               );
                               setState(() {
                                 shopWidth = 90;
-                                isDone = true;
+                                itemTranstionDone = true;
                               });
                             }
                           },
@@ -261,22 +277,60 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           "Home",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
         ),
-        InkWell(
-          onTap: () {
-            setState(() {
-              shopWidth = 50;
-            });
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
-            width: shopWidth,
-            alignment: Alignment.topRight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: shopWidth == 45 ? Colors.transparent : Colors.grey),
-            ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          width: shopWidth,
+          alignment: Alignment.topRight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: shopWidth == 45 ? Colors.transparent : Colors.grey),
+          ),
+          child: GestureDetector(
+            onTap: () async {
+              if (shopWidth == 90) {
+                _itemCountFadeController.forward();
+                // _imageFadeController.reverse();
+                setState(() {
+                  showItemCountNumber = 1;
+                  shopWidth = 50;
+                });
+              } else {
+                _itemCountFadeController.reverse();
+
+                setState(() {
+                  showItemCountNumber = 2;
+
+                  shopWidth = 90;
+                });
+                _imageFadeController
+                  ..reset()
+                  ..forward();
+                await Future.delayed(const Duration(milliseconds: 220));
+                setState(() {
+                  showItemCountNumber = 2;
+                });
+              }
+              print(
+                  "item is §$showItemCountNumber and anim ${_imageFadeAnimation.status}"); // await Future.delayed(
+              //   const Duration(milliseconds: 140),
+              // ).then((value) {
+              //   if (showItemCountNumber == 1) {
+
+              //     setState(() {
+              //       // showItemCountNumber = false;
+              //     });
+              //   } else {
+              //     _itemCountFadeController.forward();
+              //     setState(() {
+              //       //showItemCountNumber = true;
+              //       shopWidth = 90;
+              //     });
+              //   }
+              // });
+            },
             child: Container(
+              color: Colors.transparent,
               margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -284,11 +338,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                   const SizedBox(
                     width: 4,
                   ),
-                  if (shopWidth != 45 && !_slideController.isAnimating)
-                    const Expanded(
-                      child: Text(
-                        "1",
-                        style: TextStyle(fontSize: 20),
+                  if (showItemCountNumber == 1 && !_slideController.isAnimating)
+                    Expanded(
+                      child: FadeTransition(
+                        opacity: _itemCountFadeAnimation,
+                        child: const Text(
+                          "1",
+                          style: TextStyle(fontSize: 17),
+                        ),
                       ),
                     ),
                   Container(
@@ -304,11 +361,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     );
   }
 
-  Visibility _buildAnimatingShoesWidget() {
+  Widget _buildAnimatingShoesWidget() {
     return Visibility(
-      visible: shopWidth != 50,
+      visible: showItemCountNumber == 2,
       child: FadeTransition(
-        opacity: _fadeAnimation,
+        opacity: _imageFadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
           child: AnimatedContainer(
